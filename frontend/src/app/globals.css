@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens lifted from the published mockup (design/portfolio-demo.html) so the built site
+ * and the approved design cannot drift.
+ *
+ * Light is the designed theme and stays the default. Dark (Sprint 11, COULD tier) is a derived
+ * variant, not a second design: the same hues at inverted lightness, so the site keeps its
+ * identity rather than becoming a different-looking site after dark. Three states are handled —
+ * an explicit choice stamps data-theme on <html>, and the untouched default follows the
+ * operating system.
+ */
+:root {
+  --bg: oklch(0.99 0.004 290);
+  /* The mockup's secondary surface, kept at its designed value. */
+  --bg2: oklch(0.965 0.007 290);
+  /*
+   * The footer's own band. Same hue family as everything else — this is the page colour stepped
+   * down, not a new colour — but a little deeper than --bg2, which at 0.965 is nearly invisible
+   * against a 0.99 page once the dot-grid is over it.
+   */
+  --footer: oklch(0.94 0.01 290);
+  --surface: oklch(1 0 0);
+  --text: oklch(0.22 0.02 290);
+  --muted: oklch(0.5 0.02 290);
+  --border: oklch(0.87 0.013 290);
+  --accent: oklch(0.52 0.2 293);
+  --accent-soft: oklch(0.52 0.2 293 / 0.1);
+  --cyan: oklch(0.5 0.13 195);
+  --cyan-soft: oklch(0.5 0.13 195 / 0.1);
+  --success: oklch(0.48 0.15 150);
+  --warning: oklch(0.55 0.16 70);
+}
+
+/* Following the OS, unless the reader has explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.17 0.012 290);
+    --bg2: oklch(0.21 0.014 290);
+    /* Lighter than the page, not darker: below ~0.17 there is almost no room left to darken, so
+       a recessed band simply disappears. A raised band is the reading that works after dark. */
+    --footer: oklch(0.235 0.015 290);
+    --surface: oklch(0.21 0.014 290);
+    --text: oklch(0.94 0.006 290);
+    --muted: oklch(0.72 0.02 290);
+    --border: oklch(0.31 0.016 290);
+    --accent: oklch(0.72 0.16 293);
+    --accent-soft: oklch(0.72 0.16 293 / 0.16);
+    --cyan: oklch(0.72 0.11 195);
+    --cyan-soft: oklch(0.72 0.11 195 / 0.16);
+    --success: oklch(0.72 0.14 150);
+    --warning: oklch(0.78 0.14 70);
+  }
+}
+
+/* An explicit choice wins over the OS, in both directions. */
+:root[data-theme="dark"] {
+  --bg: oklch(0.17 0.012 290);
+  --bg2: oklch(0.21 0.014 290);
+  --footer: oklch(0.235 0.015 290);
+  --surface: oklch(0.21 0.014 290);
+  --text: oklch(0.94 0.006 290);
+  --muted: oklch(0.72 0.02 290);
+  --border: oklch(0.31 0.016 290);
+  --accent: oklch(0.72 0.16 293);
+  --accent-soft: oklch(0.72 0.16 293 / 0.16);
+  --cyan: oklch(0.72 0.11 195);
+  --cyan-soft: oklch(0.72 0.11 195 / 0.16);
+  --success: oklch(0.72 0.14 150);
+  --warning: oklch(0.78 0.14 70);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg2);
+  --color-footer: var(--footer);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-cyan: var(--cyan);
+  --color-cyan-soft: var(--cyan-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-sans: var(--font-ibm-plex-sans), system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/* The mockup's dot-grid page decoration. */
+.dot-grid {
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Accessibility: a visible focus ring everywhere, never suppressed
+   (docs/10-frontend/ux-states-and-quality.md). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Article bodies are sanitized HTML (D-027); this styles the tags the allow-list permits. */
+.prose-article h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; }
+.prose-article h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; margin-top: 1.25rem; }
+.prose-article p { color: var(--muted); }
+.prose-article a { color: var(--accent); text-decoration: underline; }
+.prose-article ul, .prose-article ol { padding-left: 1.5rem; list-style: revert; color: var(--muted); }
+.prose-article blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--muted); }
+.prose-article pre { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; overflow-x: auto; }
+.prose-article code { font-size: 0.9em; }
+.prose-article img { border-radius: 12px; border: 1px solid var(--border); max-width: 100%; height: auto; }
+.prose-article table { width: 100%; border-collapse: collapse; }
+.prose-article th, .prose-article td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
