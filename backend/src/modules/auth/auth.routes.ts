@@ -26,14 +26,15 @@ const resetConfirmSchema = z.object({
 });
 
 /**
- * httpOnly/Secure/SameSite=Strict, never in a response body (D-016): a body-carried refresh token
- * must be held by JavaScript, so one XSS payload exfiltrates a 7-day credential.
+ * httpOnly/Secure, never in a response body (D-016): a body-carried refresh token must be held by
+ * JavaScript, so one XSS payload exfiltrates a 7-day credential. SameSite defaults to `strict` and
+ * is relaxed only where the deployment splits the frontend onto its own domain (D-037).
  */
 function refreshCookieOptions(maxAgeSeconds: number) {
   return {
     httpOnly: true,
     secure: env.auth.cookieSecure,
-    sameSite: "strict" as const,
+    sameSite: env.auth.cookieSameSite,
     path: COOKIE_PATH,
     maxAge: maxAgeSeconds * 1000,
   };

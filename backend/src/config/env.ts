@@ -29,6 +29,22 @@ export function duration(value: string): number {
   return Math.round(amount * seconds);
 }
 
+/**
+ * Validated at startup rather than at the first login: `SameSite=None` without `Secure` is
+ * dropped by every current browser, which would look like a mysteriously broken session hours
+ * later instead of a failed boot here.
+ */
+function sameSite(): "strict" | "lax" | "none" {
+  const value = (process.env.COOKIE_SAMESITE ?? "strict").trim().toLowerCase();
+  if (value !== "strict" && value !== "lax" && value !== "none") {
+    throw new Error(`COOKIE_SAMESITE must be strict, lax or none — got "${value}"`);
+  }
+  if (value === "none" && (process.env.COOKIE_SECURE ?? "false") !== "true") {
+    throw new Error("COOKIE_SAMESITE=none requires COOKIE_SECURE=true — browsers reject the cookie otherwise");
+  }
+  return value;
+}
+
 const isDev = (process.env.NODE_ENV ?? "development") !== "production";
 
 export const env = {
@@ -71,6 +87,14 @@ export const env = {
       window: duration(process.env.LOGIN_RATE_LIMIT_WINDOW ?? "15m"),
     },
     cookieSecure: (process.env.COOKIE_SECURE ?? "false") === "true",
+    /*
+     * `strict` while the frontend and the API share an origin (local development). A frontend
+     * deployed to its own domain — Vercel, say — makes every API call cross-site, and a
+     * SameSite=Strict cookie is simply not sent on those, so the refresh token would never
+     * arrive and every session would die at the 15-minute access-token expiry. `none` is the
+     * only value browsers send cross-site, and they reject it without `Secure`.
+     */
+    cookieSameSite: sameSite(),
     bootstrap: {
       email: process.env.ADMIN_EMAIL ?? (isDev ? "admin@localhost" : ""),
       password: process.env.ADMIN_PASSWORD ?? (isDev ? "dev-only-password" : ""),

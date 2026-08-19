@@ -98,12 +98,31 @@ Both were driven end to end in a real browser:
   reload, creating and publishing a project, a settings change crossing from `/admin` to `/`, the
   contact form reaching the inbox, and the theme toggle (15.97:1 dark contrast).
 
+## Deploying the backend
+
+`npm run build` compiles to `dist/` (and copies the SQL migrations, which `tsc` does not emit);
+`npm start` runs it. Migrations are applied at startup, so a fresh database needs no separate step.
+
+Set these on the host — a `.env` file is generally not read by a PaaS:
+
+| Variable | Why |
+|---|---|
+| `NODE_ENV=production` | Turns off every development fallback, including the JWT secret's. |
+| `JWT_SECRET` | No default in production, deliberately (D-017) — the process refuses to boot without it. `openssl rand -base64 48`. |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | Managed Postgres. |
+| `REDIS_HOST` / `REDIS_PORT` | Sessions (refresh-token allowlist), rate limits, OTP-style TTLs. Not optional — login and rate limiting need it. |
+| `CORS_ALLOWED_ORIGINS` | Every origin that will call the API, comma-separated. No wildcard: this API sends credentials. |
+| `COOKIE_SECURE=true` + `COOKIE_SAMESITE=none` | Required when the frontend is on its own domain (D-037) — a `SameSite=Strict` cookie is never sent cross-site, so sessions would die at the access-token expiry. |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Provisions the single admin on first boot **only while no admin row exists**. Without them a fresh database starts with no way to log in (it warns and continues). |
+| `MEDIA_STORAGE_ROOT` | A **persistent** path. See the gap below. |
+
 ## Known gaps
 
-Inherited from the parent, unchanged:
-
+- **Media is stored on the local filesystem.** On a platform with an ephemeral disk, every upload
+  is lost on the next deploy or restart, and the rows that reference them will 404. This needs a
+  mounted volume or the object storage that OPEN_QUESTIONS #11 defers.
 - **No email is sent** (D-028). Password-reset tokens are generated and logged as undelivered, so
   self-service reset does not work end to end.
-- **Media is chosen by id** in admin forms; the Media library shows each file's id.
-- The Research module (D-014) was never scheduled and is not built.
+- **No automated test suite in this backend.** It was verified by the external 43-check
+  contract-parity suite and browser runs, not by `npm test` — which reports 0 tests.
 - The site renders empty until real content is added.

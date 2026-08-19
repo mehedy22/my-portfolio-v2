@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Node.js implementation of the portfolio API — same contract as openapi.json",
+  "description": "Node.js implementation of the portfolio API \u2014 same contract as openapi.json",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').cpSync('src/db/migrations','dist/db/migrations',{recursive:true})\"",
     "start": "node dist/index.js",
     "migrate": "tsx src/db/migrate.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
