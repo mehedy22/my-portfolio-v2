@@ -22,7 +22,7 @@ export function SiteNav({ items }: { items: NavItem[] }) {
     <>
       <button
         type="button"
-        className="mb-4 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm md:hidden"
+        className="mb-4 inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-base md:hidden"
         aria-expanded={open}
         aria-controls="site-nav"
         onClick={() => setOpen((value) => !value)}
@@ -35,14 +35,14 @@ export function SiteNav({ items }: { items: NavItem[] }) {
         aria-label="Main"
         className={`${open ? "block" : "hidden"} md:block`}
       >
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-1.5">
           {items.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
                 onClick={() => setOpen(false)}
-                className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                className={`block rounded-xl px-4 py-3 text-lg font-medium transition ${
                   isActive(item.href)
                     ? "bg-accent-soft text-accent"
                     : "text-muted hover:bg-accent-soft hover:text-accent"

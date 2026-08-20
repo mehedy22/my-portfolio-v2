@@ -97,18 +97,17 @@ export default async function AboutPage() {
       {roles.length > 0 ? (
         /*
           Cards, each led by the company's logo — the logo the schema has carried since V5 and
-          this page never drew, which is why a portfolio full of uploaded logos still showed
-          none. Two abreast on a wide screen and one per row below it, so a role gets a block
-          with room for its description instead of the thin strip beside a date column that this
-          section used to be.
+          this page never drew, which is why a portfolio full of uploaded logos still showed none.
+          One per row across the full column, the same shape the education entries take (D-035):
+          a role's description is prose, and prose in a half-width card is prose in a trench.
         */
         <section className="mt-16">
           <Chip>Experience</Chip>
-          <ol className="mt-6 gap-5 lg:columns-2">
+          <ol className="mt-6 flex flex-col gap-5">
             {roles.map((role) => {
               const logo = mediaUrl(role.companyLogo?.url);
               return (
-                <li key={role.id} className="mb-5 break-inside-avoid">
+                <li key={role.id}>
                   <Card className="flex gap-5 p-6 sm:gap-6 sm:p-7">
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-accent-soft sm:h-20 sm:w-20">
                       {logo ? (
@@ -235,18 +234,32 @@ export default async function AboutPage() {
   );
 }
 
-function formatYear(value?: string): string {
-  return value ? new Date(value).getFullYear().toString() : "";
+/**
+ * "February 2025" — the month matters. A year alone left most entries reading "2025 — 2025",
+ * which says nothing about whether a role lasted a fortnight or eleven months.
+ *
+ * <p>Formatted from the string's own parts rather than by letting `new Date()` parse it: the API
+ * sends plain `YYYY-MM-DD` dates, which JavaScript reads as UTC midnight, so west of Greenwich a
+ * 1 March start would render as February.
+ */
+function formatMonth(value?: string): string {
+  if (!value) return "";
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  const date = parts
+    ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))
+    : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-/** "2023 — Present", the way the mockup's timeline column reads. */
+/** "February 2025 — Present", the way the timeline column reads. */
 function formatRange(
   start?: string,
   end?: string,
   current?: boolean,
   currentLabel = "Present",
 ): string {
-  const from = formatYear(start);
-  const to = current ? currentLabel : formatYear(end);
+  const from = formatMonth(start);
+  const to = current ? currentLabel : formatMonth(end);
   return [from, to].filter(Boolean).join(" — ");
 }

@@ -23,11 +23,11 @@ export default async function ExperiencePage() {
       {roles.length === 0 ? (
         <EmptyState message="Nothing published yet." />
       ) : (
-        <ol className="gap-5 lg:columns-2">
+        <ol className="flex flex-col gap-5">
           {roles.map((role) => {
             const logo = mediaUrl(role.companyLogo?.url);
             return (
-              <li key={role.id} className="mb-5 break-inside-avoid">
+              <li key={role.id}>
                 <Card>
                   <div className="flex items-start gap-5">
                     {/* Always a tile, logo or not: a card that drops the block when nothing was

@@ -41,27 +41,27 @@ export async function Sidebar() {
 
   return (
     <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-border bg-surface/70 p-6 backdrop-blur-xl md:sticky md:top-0 md:h-screen md:w-72 md:border-b-0 md:border-r">
-      <Link href="/" className="flex items-center gap-3">
+      <Link href="/" className="flex items-center gap-3.5">
         {photo ? (
           <Image
             src={photo}
             alt={profile.profileImage?.altText || `${title} profile photo`}
-            width={48}
-            height={48}
+            width={56}
+            height={56}
             unoptimized
-            className="h-12 w-12 rounded-full border border-border object-cover"
+            className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
           />
         ) : (
           <span
             aria-hidden
-            className="grid h-12 w-12 place-items-center rounded-full bg-accent-soft font-display text-lg font-semibold text-accent"
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-accent-soft font-display text-xl font-semibold text-accent"
           >
             {title.slice(0, 1)}
           </span>
         )}
-        <span>
-          <span className="block font-display text-base font-semibold">{title}</span>
-          {tagline ? <span className="block text-xs text-muted">{tagline}</span> : null}
+        <span className="min-w-0">
+          <span className="block font-display text-lg font-semibold leading-tight">{title}</span>
+          {tagline ? <span className="mt-0.5 block text-sm leading-snug text-muted">{tagline}</span> : null}
         </span>
       </Link>
 
@@ -74,7 +74,7 @@ export async function Sidebar() {
             href={resume}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-base font-medium text-white transition hover:opacity-90"
           >
             Download resume
           </a>
@@ -90,9 +90,9 @@ export async function Sidebar() {
                   rel="noreferrer noopener me"
                   aria-label={link.platform}
                   title={link.platform}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition hover:border-accent hover:text-accent"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted transition hover:border-accent hover:text-accent"
                 >
-                  <SocialIcon platform={link.platform} />
+                  <SocialIcon platform={link.platform} size={20} />
                 </a>
               </li>
             ))}

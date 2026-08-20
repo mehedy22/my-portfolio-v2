@@ -73,7 +73,16 @@ export function ButtonLink({
   );
 }
 
-/** Formats a date range as the mockup shows it: "Apr 2021 — Present". */
+/**
+ * Formats a date range as "February 2025 — November 2025".
+ *
+ * <p>The month is spelled out, and it is always there: a year-only range collapsed most entries
+ * to "2025 — 2025", which tells the reader nothing about how long anything lasted.
+ *
+ * <p>Parsed from the string's own parts, not by `new Date()`. The API sends plain `YYYY-MM-DD`
+ * dates and JavaScript reads those as UTC midnight, so in any timezone behind Greenwich a 1 March
+ * start renders as February — the same class of bug that made the Node backend look a day early.
+ */
 export function DateRange({
   start,
   end,
@@ -86,10 +95,15 @@ export function DateRange({
   currentLabel?: string;
 }) {
   if (!start && !end) return null;
-  const format = (value?: string) =>
-    value
-      ? new Date(value).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
-      : undefined;
+  const format = (value?: string) => {
+    if (!value) return undefined;
+    const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    const date = parts
+      ? new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]))
+      : new Date(value);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  };
   const to = current ? currentLabel : format(end);
   return (
     <span className="text-sm text-muted">
