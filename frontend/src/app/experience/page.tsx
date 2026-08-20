@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { mediaUrl } from "@/lib/api";
 import { getExperience } from "@/lib/content";
-import { Card, Chip, DateRange, EmptyState, PageHeader } from "@/components/ui/primitives";
+import { Card, Chip, CompanyName, DateRange, EmptyState, PageHeader } from "@/components/ui/primitives";
 import { TrackPageView } from "@/components/track-page-view";
 
 /** Rendered per request so an admin edit is visible immediately (D-025). */
@@ -50,7 +50,9 @@ export default async function ExperiencePage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h2 className="font-display text-lg font-semibold sm:text-xl">{role.position}</h2>
-                      <p className="text-sm text-accent">{role.company}</p>
+                      <p className="text-sm text-accent">
+                        <CompanyName name={role.company} url={role.companyUrl} />
+                      </p>
                       <div className="mt-1 flex flex-wrap items-center gap-3">
                         <DateRange
                           start={role.startDate}

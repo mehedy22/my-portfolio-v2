@@ -71,8 +71,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-20 max-w-6xl" aria-labelledby="featured-heading">
-        <div className="mb-7">
+      <section className="mt-20" aria-labelledby="featured-heading">
+        <div className="mx-auto mb-7 max-w-6xl">
           <h2 id="featured-heading" className="font-display text-2xl font-semibold">
             Featured
           </h2>
@@ -87,7 +87,7 @@ export default async function HomePage() {
             decided by the picture itself — a portrait image gets the tall tile, because cropping
             one into a wide tile is what makes a gallery look wrong.
           */
-          <div className="grid auto-rows-[170px] grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+          <div className="grid auto-rows-[200px] grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
             {featured.map((media) => {
               const shape = shapeOf(media);
               const url = mediaUrl(media.url);
@@ -104,7 +104,7 @@ export default async function HomePage() {
                       alt={media.altText || ""}
                       fill
                       unoptimized
-                      sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
                       className="object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
                   ) : null}

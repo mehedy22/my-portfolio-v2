@@ -1710,6 +1710,7 @@ export interface components {
         };
         ExperienceUpdateRequest: {
             company: string;
+            companyUrl?: string;
             position: string;
             /** @enum {string} */
             employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "FREELANCE";
@@ -1740,6 +1741,7 @@ export interface components {
             /** Format: int64 */
             id?: number;
             company?: string;
+            companyUrl?: string;
             position?: string;
             /** @enum {string} */
             employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "FREELANCE";
@@ -1766,6 +1768,7 @@ export interface components {
             institution: string;
             degree?: string;
             field?: string;
+            result?: string;
             description?: string;
             /** Format: date */
             startDate?: string;
@@ -1793,6 +1796,7 @@ export interface components {
             institution?: string;
             degree?: string;
             field?: string;
+            result?: string;
             description?: string;
             /** Format: date */
             startDate?: string;
@@ -2064,6 +2068,8 @@ export interface components {
         };
         ExperienceCreateRequest: {
             company: string;
+            /** @description The employer's site, linked from the company name */
+            companyUrl?: string;
             position: string;
             /** @enum {string} */
             employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP" | "FREELANCE";
@@ -2091,6 +2097,8 @@ export interface components {
             institution: string;
             degree?: string;
             field?: string;
+            /** @description GPA, CGPA, class or grade, as awarded */
+            result?: string;
             description?: string;
             /** Format: date */
             startDate?: string;

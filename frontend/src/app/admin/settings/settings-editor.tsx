@@ -4,10 +4,25 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiError } from "@/lib/admin/api";
 import { Button, Card, ErrorState, ListSkeleton, PageHeader, Toast } from "@/components/admin/ui/primitives";
+import { MediaGalleryPicker } from "@/components/admin/ui/media-picker";
 import { useToast } from "@/lib/admin/use-toast";
 
 const BOOLEAN_KEYS = new Set(["nav.show_articles", "nav.show_research"]);
 const MULTILINE_KEYS = new Set(["site.description", "seo.default_description"]);
+
+/**
+ * The home page's Featured gallery. It is stored as a comma-separated list of media ids because
+ * the settings table is a string-valued registry (D-024) — but typing ids into a text box was
+ * never a reasonable way to choose pictures, so this key gets the gallery picker instead and the
+ * string is assembled from what was chosen.
+ */
+const FEATURED_KEY = "home.featured_media_ids";
+
+const parseIds = (value: string | undefined): number[] =>
+  (value ?? "")
+    .split(",")
+    .map((part) => Number(part.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0);
 
 /** Human labels for the registry's dotted keys; unknown keys fall back to the key itself. */
 const LABELS: Record<string, string> = {
@@ -22,6 +37,7 @@ const LABELS: Record<string, string> = {
   "seo.default_title": "Default page title",
   "seo.default_description": "Default meta description",
   "seo.default_og_image_url": "Default Open Graph image URL",
+  [FEATURED_KEY]: "Featured images",
 };
 
 /**
@@ -66,7 +82,7 @@ export function SettingsEditor({ title, path }: { title: string; path: string })
     return <ErrorState message="Could not load settings." onRetry={() => query.refetch()} />;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-5xl">
       <PageHeader title={title} />
       <Card>
         <form
@@ -76,7 +92,27 @@ export function SettingsEditor({ title, path }: { title: string; path: string })
           }}
           className="flex flex-col gap-4"
         >
+          {/*
+            The gallery goes first and spans the form: it is the only setting on this screen that
+            is a piece of content rather than a line of text, and it needs the room.
+          */}
+          {FEATURED_KEY in values ? (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">{LABELS[FEATURED_KEY]}</span>
+              <span className="text-xs text-muted">
+                Shown in the Featured grid on the home page, in this order. Upload here — there is
+                no need to visit the Media library first.
+              </span>
+              <MediaGalleryPicker
+                value={parseIds(values[FEATURED_KEY])}
+                onChange={(ids) => setValues({ ...values, [FEATURED_KEY]: ids.join(",") })}
+              />
+              <span className="text-xs text-muted">{FEATURED_KEY}</span>
+            </div>
+          ) : null}
+
           {Object.keys(values)
+            .filter((key) => key !== FEATURED_KEY)
             .sort()
             .map((key) => (
               <label key={key} className="flex flex-col gap-1.5">

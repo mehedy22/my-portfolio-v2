@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, apiBaseUrl, getAccessToken, mediaUrl } from "@/lib/admin/api";
 import { Button } from "@/components/admin/ui/primitives";
 
@@ -308,18 +308,36 @@ export function MediaGalleryPicker({
 }) {
   const library = useMediaLibrary();
   const [browsing, setBrowsing] = useState(false);
+
+  /*
+   * Every edit is computed from this ref rather than from the `value` prop, and the ref is moved
+   * forward at the moment of the click. Two clicks inside one React tick both see the same prop —
+   * the parent has not re-rendered yet — so the second would overwrite the first and one of the
+   * two chosen images would silently not be selected.
+   */
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  }, [value]);
+
+  const update = (next: number[]) => {
+    latest.current = next;
+    onChange(next);
+  };
+
   const { upload, uploading, error, altText, setAltText, fileInput } = useMediaUpload((id) => {
-    if (!value.includes(id)) onChange([...value, id]);
+    if (!latest.current.includes(id)) update([...latest.current, id]);
   });
 
   const byId = new Map((library.data ?? []).map((item) => [item.id, item] as const));
 
   const move = (index: number, delta: number) => {
+    const current = latest.current;
     const target = index + delta;
-    if (target < 0 || target >= value.length) return;
-    const next = [...value];
+    if (target < 0 || target >= current.length) return;
+    const next = [...current];
     [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
+    update(next);
   };
 
   return (
@@ -368,7 +386,9 @@ export function MediaGalleryPicker({
                     type="button"
                     aria-label="Remove from gallery"
                     title="Remove from gallery"
-                    onClick={() => onChange(value.filter((_, position) => position !== index))}
+                    onClick={() =>
+                      update(latest.current.filter((_, position) => position !== index))
+                    }
                     className="rounded px-1 text-xs text-muted transition hover:text-warning"
                   >
                     ✕
@@ -426,8 +446,10 @@ export function MediaGalleryPicker({
             loading={library.isLoading}
             selected={value}
             onPick={(id) =>
-              onChange(
-                value.includes(id) ? value.filter((item) => item !== id) : [...value, id],
+              update(
+                latest.current.includes(id)
+                  ? latest.current.filter((item) => item !== id)
+                  : [...latest.current, id],
               )
             }
           />

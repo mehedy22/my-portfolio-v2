@@ -9,7 +9,7 @@ import {
   setting,
 } from "@/lib/content";
 import { TrackPageView } from "@/components/track-page-view";
-import { ButtonLink, Card, Chip, EmptyState } from "@/components/ui/primitives";
+import { ButtonLink, Card, Chip, CompanyName, EmptyState } from "@/components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -132,7 +132,9 @@ export default async function AboutPage() {
                       <h3 className="font-display text-lg font-semibold sm:text-xl">
                         {role.position}
                       </h3>
-                      <p className="mt-1 text-sm text-accent">{role.company}</p>
+                      <p className="mt-1 text-sm text-accent">
+                        <CompanyName name={role.company} url={role.companyUrl} />
+                      </p>
                       <p className="mt-1 text-sm text-muted">
                         {formatRange(role.startDate, role.endDate, role.currentlyWorking, "Present")}
                         {role.employmentType
@@ -196,6 +198,11 @@ export default async function AboutPage() {
                         ? ` — ${formatRange(entry.startDate, entry.endDate, entry.currentlyStudying, "Ongoing")}`
                         : ""}
                     </p>
+                    {entry.result ? (
+                      <p className="mt-1.5 text-sm text-muted">
+                        Result <span className="font-medium text-text">{entry.result}</span>
+                      </p>
+                    ) : null}
                     {entry.description ? (
                       <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted">
                         {entry.description}

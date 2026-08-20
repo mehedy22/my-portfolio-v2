@@ -53,6 +53,11 @@ export default async function EducationPage() {
                         current={entry.currentlyStudying}
                         currentLabel="Ongoing"
                       />
+                      {entry.result ? (
+                        <p className="mt-1.5 text-sm text-muted">
+                          Result <span className="font-medium text-text">{entry.result}</span>
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                   {entry.description ? (

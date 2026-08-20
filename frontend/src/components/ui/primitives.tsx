@@ -74,6 +74,33 @@ export function ButtonLink({
 }
 
 /**
+ * The employer's name, linked to their site when one is set.
+ *
+ * <p>A role names a company, and a reader who does not recognise the name has nowhere to go. The
+ * link is the name itself rather than a separate icon — there is nothing else on the card it could
+ * be mistaken for — and it opens in a new tab, because losing a half-read CV to a company homepage
+ * is a poor trade.
+ */
+export function CompanyName({ name, url }: { name?: string; url?: string }) {
+  if (!name) return null;
+  if (!url) return <span>{name}</span>;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="inline-flex items-center gap-1 hover:underline"
+    >
+      {name}
+      <span aria-hidden className="text-[0.7em] opacity-70">
+        &#8599;
+      </span>
+      <span className="sr-only">(opens the company website in a new tab)</span>
+    </a>
+  );
+}
+
+/**
  * Formats a date range as "February 2025 — November 2025".
  *
  * <p>The month is spelled out, and it is always there: a year-only range collapsed most entries

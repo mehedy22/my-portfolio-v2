@@ -17,6 +17,14 @@ const schema = z.object({
   endDate: z.string().nullish(),
   currentlyWorking: z.boolean().nullish(),
   companyLogoMediaId: z.number().nullish(),
+  companyUrl: z
+    .string()
+    .max(500)
+    .nullish()
+    .transform((value) => {
+      const trimmed = value?.trim();
+      return trimmed ? trimmed : null;
+    }),
   displayOrder: z.number().int().nullish(),
   status: z.enum(STATUSES).nullish(),
   aiVisible: z.boolean().nullish(),
@@ -31,6 +39,7 @@ export const experienceModule = contentModule({
   updateSchema: schema,
   columns: [
     { column: "company", field: "company" },
+    { column: "company_url", field: "companyUrl" },
     { column: "position", field: "position" },
     { column: "employment_type", field: "employmentType" },
     { column: "description", field: "description" },

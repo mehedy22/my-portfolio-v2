@@ -4,6 +4,12 @@ import { ContentScreen, STATUS_OPTIONS, type FieldSpec } from "@/components/admi
 
 const FIELDS: FieldSpec[] = [
   { name: "company", label: "Company", required: true },
+  {
+    name: "companyUrl",
+    label: "Company website",
+    optional: true,
+    hint: "Linked from the company name wherever the role is shown.",
+  },
   { name: "position", label: "Position", required: true },
   {
     name: "employmentType",
@@ -43,6 +49,7 @@ export default function AdminExperiencePage() {
       })}
       toForm={(item) => ({
         company: item?.company ?? "",
+        companyUrl: item?.companyUrl ?? null,
         position: item?.position ?? "",
         employmentType: item?.employmentType ?? null,
         startDate: item?.startDate ?? "",
