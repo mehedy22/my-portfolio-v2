@@ -1,0 +1,11 @@
+-- Removes two settings that had become controls changing nothing (D-043).
+--
+-- nav.show_articles and nav.show_research gated the Articles and Research nav entries while those
+-- modules were unbuilt. Since D-030/D-032 the sidebar renders a fixed seven-item nav, so both
+-- toggles were editable in the admin and read by nothing — the worst kind of setting, because it
+-- invites someone to change it and then wonder why the site ignored them.
+--
+-- The registry in code is the source of truth for which keys exist (D-024), so removing them there
+-- is what actually retires them; this deletes the rows they may have left behind, which would
+-- otherwise sit in site_setting forever with no key to belong to.
+DELETE FROM site_setting WHERE key IN ('nav.show_articles', 'nav.show_research');

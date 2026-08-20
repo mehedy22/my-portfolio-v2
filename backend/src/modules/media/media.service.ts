@@ -1,12 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { createReadStream } from "node:fs";
-import { mkdir, unlink, writeFile, stat } from "node:fs/promises";
-import { dirname, join, resolve, sep } from "node:path";
 import { env } from "../../config/env.js";
 import { pool } from "../../db/pool.js";
 import { NotFoundError, ValidationError } from "../../common/errors.js";
 import { page, pageParams, type PageResponse } from "../../common/api.js";
 import { detectFileType, readDimensions } from "./fileType.js";
+import { storage, storageFor } from "./storage.js";
 
 export type MediaResponse = {
   id: number;
@@ -38,8 +36,6 @@ type MediaRow = {
 
 /** The one place the public content path is constructed. */
 const urlFor = (id: number) => `/api/v1/media/${id}/content`;
-
-const STORAGE_ROOT = resolve(env.media.storageRoot);
 
 export function toMediaResponse(row: MediaRow | null | undefined): MediaResponse | null {
   if (!row) return null;
@@ -98,19 +94,20 @@ export async function upload(
   }
 
   const storageName = `${randomUUID()}.${type.extension}`;
-  const locator = await store(storageName, file.buffer);
+  const locator = await storage.save(storageName, file.buffer, type.mimeType);
   const dimensions = type.isImage ? readDimensions(file.buffer, type) : null;
 
   const { rows } = await pool.query<MediaRow>(
     `INSERT INTO media (file_name, original_file_name, mime_type, size_bytes, storage_backend,
                         storage_path_or_url, width, height, alt_text, uploaded_by_admin_id)
-     VALUES ($1, $2, $3, $4, 'LOCAL', $5, $6, $7, $8, $9)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       storageName,
       displayName(file.originalname),
       type.mimeType,
       file.buffer.length,
+      storage.backend,
       locator,
       dimensions?.width ?? null,
       dimensions?.height ?? null,
@@ -149,11 +146,8 @@ export async function remove(id: number): Promise<void> {
   const row = rows[0];
   if (!row) throw new NotFoundError(`Media ${id} not found`);
 
-  const path = resolveInsideRoot(row.storage_path_or_url);
-  if (path) {
-    // The row is already soft-deleted; an orphaned file is untidy, not incorrect.
-    await unlink(path).catch(() => undefined);
-  }
+  // The row is already soft-deleted; an orphaned object is untidy, not incorrect.
+  await storageFor(row.storage_backend)?.remove(row.storage_path_or_url);
   console.info(`Media deleted: id=${id}`);
 }
 
@@ -165,15 +159,18 @@ export async function loadContent(id: number) {
   const row = rows[0];
   if (!row) throw new NotFoundError(`Media ${id} not found`);
 
-  const path = resolveInsideRoot(row.storage_path_or_url);
-  if (!path || !(await stat(path).catch(() => null))) {
+  const stream = await storageFor(row.storage_backend)?.open(row.storage_path_or_url);
+  if (!stream) {
     // A row without bytes is a storage inconsistency worth an operator's attention; the caller
     // still just gets a 404.
-    console.error(`Media row ${id} has no readable file at its recorded location`);
+    console.error(
+      `Media row ${id} has no readable content at ${row.storage_backend} locator ` +
+        `"${row.storage_path_or_url}"`,
+    );
     throw new NotFoundError(`Media ${id} not found`);
   }
   return {
-    stream: createReadStream(path),
+    stream,
     mimeType: row.mime_type,
     sizeBytes: Number(row.size_bytes),
     originalFileName: row.original_file_name,
@@ -196,33 +193,6 @@ export async function mediaByIds(ids: number[]): Promise<Map<number, MediaRespon
     [ids],
   );
   return new Map(rows.map((row) => [row.id, toMediaResponse(row)!]));
-}
-
-// --------------------------------------------------------------- storage
-
-/**
- * Local filesystem backend. Files are sharded into `yyyy/MM/` so the root does not degrade into
- * one directory with thousands of entries.
- */
-async function store(fileName: string, content: Buffer): Promise<string> {
-  const now = new Date();
-  const relative = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${fileName}`;
-  const target = resolveInsideRoot(relative);
-  if (!target) throw new Error("Generated storage path escapes the media root");
-  await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, content);
-  return relative;
-}
-
-/**
- * Every locator is re-resolved against the root and checked to still be inside it. The names this
- * module generates cannot escape; this check is what stops a corrupted or hand-edited
- * `storage_path_or_url` from becoming an arbitrary-file read.
- */
-function resolveInsideRoot(locator: string): string | null {
-  if (!locator?.trim()) return null;
-  const candidate = resolve(join(STORAGE_ROOT, locator));
-  return candidate === STORAGE_ROOT || candidate.startsWith(STORAGE_ROOT + sep) ? candidate : null;
 }
 
 /**

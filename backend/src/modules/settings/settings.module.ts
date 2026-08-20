@@ -12,6 +12,13 @@ import { mediaByIds, requireMedia } from "../media/media.service.js";
  * public exposure is a security boundary — one an admin could otherwise widen by typing a key
  * name into a form — and because a genuinely new setting always needs frontend code to read it.
  */
+/*
+ * BOOLEAN is retained with no key currently using it. The two that did — nav.show_articles and
+ * nav.show_research — were removed on 2026-08-20 (**D-043**): the sidebar has rendered a fixed
+ * seven-item nav since D-030/D-032, so both toggles had become controls that changed nothing.
+ * The type and its validation stay because the next boolean setting should not have to reintroduce
+ * them.
+ */
 type SettingKey = {
   key: string;
   type: "STRING" | "BOOLEAN";
@@ -32,8 +39,6 @@ const SETTINGS: SettingKey[] = [
   // The home page's featured gallery: media ids the admin picks, comma-separated. A setting
   // rather than a column so no migration is needed to curate the home page.
   { key: "home.featured_media_ids", type: "STRING", defaultValue: "", isPublic: true, group: "GENERAL" },
-  { key: "nav.show_articles", type: "BOOLEAN", defaultValue: "false", isPublic: true, group: "GENERAL" },
-  { key: "nav.show_research", type: "BOOLEAN", defaultValue: "false", isPublic: true, group: "GENERAL" },
   { key: "seo.default_title", type: "STRING", defaultValue: "", isPublic: true, group: "SEO" },
   { key: "seo.default_description", type: "STRING", defaultValue: "", isPublic: true, group: "SEO" },
   { key: "seo.default_og_image_url", type: "STRING", defaultValue: "", isPublic: true, group: "SEO" },

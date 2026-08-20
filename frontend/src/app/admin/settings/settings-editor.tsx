@@ -7,7 +7,6 @@ import { Button, Card, ErrorState, ListSkeleton, PageHeader, Toast } from "@/com
 import { MediaGalleryPicker } from "@/components/admin/ui/media-picker";
 import { useToast } from "@/lib/admin/use-toast";
 
-const BOOLEAN_KEYS = new Set(["nav.show_articles", "nav.show_research"]);
 const MULTILINE_KEYS = new Set(["site.description", "seo.default_description"]);
 
 /**
@@ -32,8 +31,6 @@ const LABELS: Record<string, string> = {
   "site.footer_text": "Footer text",
   "site.copyright": "Copyright",
   "contact.notification_email": "Notification email (private)",
-  "nav.show_articles": "Show Articles in the nav",
-  "nav.show_research": "Show Research in the nav",
   "seo.default_title": "Default page title",
   "seo.default_description": "Default meta description",
   "seo.default_og_image_url": "Default Open Graph image URL",
@@ -117,16 +114,13 @@ export function SettingsEditor({ title, path }: { title: string; path: string })
             .map((key) => (
               <label key={key} className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium">{LABELS[key] ?? key}</span>
-                {BOOLEAN_KEYS.has(key) ? (
-                  <select
-                    value={values[key]}
-                    onChange={(event) => setValues({ ...values, [key]: event.target.value })}
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
-                  >
-                    <option value="false">No</option>
-                    <option value="true">Yes</option>
-                  </select>
-                ) : MULTILINE_KEYS.has(key) ? (
+                {/*
+                  The Yes/No <select> that lived here served nav.show_articles and
+                  nav.show_research, the registry's only boolean keys. D-043 removed them — the
+                  sidebar has rendered a fixed nav since D-030/D-032, so both were controls that
+                  changed nothing — and with no boolean key left the branch was unreachable.
+                */}
+                {MULTILINE_KEYS.has(key) ? (
                   <textarea
                     rows={3}
                     value={values[key]}

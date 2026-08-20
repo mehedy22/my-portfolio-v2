@@ -45,6 +45,45 @@ function sameSite(): "strict" | "lax" | "none" {
   return value;
 }
 
+/**
+ * Validated at startup, in the same spirit as {@link sameSite}: object storage that is selected
+ * but not configured would fail at the first upload — or worse, serve 404s for every existing
+ * image while looking healthy — which is exactly the failure mode D-042 exists to end.
+ */
+function mediaBackend(): "LOCAL" | "OBJECT_STORAGE" {
+  const value = (process.env.MEDIA_STORAGE_BACKEND ?? "LOCAL").trim().toUpperCase();
+  if (value !== "LOCAL" && value !== "OBJECT_STORAGE") {
+    throw new Error(`MEDIA_STORAGE_BACKEND must be LOCAL or OBJECT_STORAGE — got "${value}"`);
+  }
+  if (value === "OBJECT_STORAGE") {
+    const required = ["S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"];
+    const missing = required.filter((name) => !(process.env[name] ?? "").trim());
+    if (missing.length) {
+      throw new Error(
+        `MEDIA_STORAGE_BACKEND=OBJECT_STORAGE requires ${missing.join(", ")}. ` +
+          "S3_ENDPOINT is also required for any provider other than AWS itself (R2, B2, MinIO).",
+      );
+    }
+    /*
+     * `.env.example` and the sample `.env` carry REPLACE-WITH-… placeholders so the whole set is
+     * visible rather than hidden in comments. That makes "present" a weaker check than it looks:
+     * six placeholder values satisfy it and then fail at the first upload, or serve 404s for every
+     * image — the exact failure this validation exists to prevent (D-042).
+     */
+    const unfilled = [...required, "S3_ENDPOINT"].filter((name) =>
+      (process.env[name] ?? "").includes("REPLACE-WITH"),
+    );
+    if (unfilled.length) {
+      throw new Error(
+        `MEDIA_STORAGE_BACKEND=OBJECT_STORAGE but ${unfilled.join(", ")} still holds the ` +
+          "placeholder from .env.example. Put the real values in the deployment's environment " +
+          "settings — they do not belong in a file in this repository.",
+      );
+    }
+  }
+  return value;
+}
+
 const isDev = (process.env.NODE_ENV ?? "development") !== "production";
 
 export const env = {
@@ -108,6 +147,23 @@ export const env = {
     // Outer guard, above the largest per-type limit, so a huge body is refused before buffering.
     maxUploadBytes: int("UPLOAD_MAX_FILE_MB", 12) * 1024 * 1024,
     storageRoot: process.env.MEDIA_STORAGE_ROOT ?? "./data/media",
+    /*
+     * Where new uploads go. LOCAL stays the default for development, where a directory is simpler
+     * than a bucket. Any deployment on an ephemeral filesystem needs OBJECT_STORAGE — see D-042:
+     * with LOCAL, every deploy discarded every upload while the rows kept pointing at them.
+     */
+    backend: mediaBackend(),
+    objectStorage: {
+      bucket: process.env.S3_BUCKET ?? "",
+      // Empty for AWS itself; set for every S3-compatible provider (R2, B2, MinIO).
+      endpoint: process.env.S3_ENDPOINT ?? "",
+      // R2 wants "auto"; AWS and B2 want a real region.
+      region: process.env.S3_REGION ?? "auto",
+      accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+      // Path style suits a custom endpoint; AWS prefers virtual-hosted, which is the default there.
+      forcePathStyle: (process.env.S3_FORCE_PATH_STYLE ?? (process.env.S3_ENDPOINT ? "true" : "false")) === "true",
+    },
   },
 
   contact: {
