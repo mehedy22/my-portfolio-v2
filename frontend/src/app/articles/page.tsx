@@ -24,7 +24,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
   const filtered = Boolean(category || tag);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <TrackPageView path="/articles" />
       <PageHeader title="Articles" lead="Writing on engineering, architecture and the things I build." />
       <Suspense fallback={null}>
@@ -53,20 +53,20 @@ export default async function ArticlesPage({ searchParams }: Props) {
                 key={article.id}
                 className={`flex gap-5 py-6 ${index < (articles.content?.length ?? 0) - 1 ? "border-b border-border" : ""}`}
               >
-                <div className="relative hidden h-20 w-30 shrink-0 overflow-hidden rounded-xl border border-border bg-accent-soft sm:block">
+                <div className="relative hidden h-28 w-44 shrink-0 overflow-hidden rounded-xl border border-border bg-accent-soft sm:block">
                   {thumbnail ? (
                     <Image
                       src={thumbnail}
                       alt={article.thumbnail?.altText || article.title || ""}
                       fill
                       unoptimized
-                      sizes="120px"
+                      sizes="176px"
                       className="object-cover"
                     />
                   ) : null}
                 </div>
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="mb-1.5 flex flex-wrap items-center gap-2">
                     {article.category ? (
                       <Link href={`/articles?category=${encodeURIComponent(article.category.toLowerCase())}`}>
@@ -92,7 +92,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
                   </h2>
 
                   {article.excerpt ? (
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted">{article.excerpt}</p>
+                    <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted">{article.excerpt}</p>
                   ) : null}
 
                   {article.tags?.length ? (

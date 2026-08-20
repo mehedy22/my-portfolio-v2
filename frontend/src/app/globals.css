@@ -1,24 +1,45 @@
 @import "tailwindcss";
 
 /*
- * Design tokens lifted from the published mockup (design/portfolio-demo.html) so the built site
- * and the approved design cannot drift.
+ * Design tokens.
  *
- * Light is the designed theme and stays the default. Dark (Sprint 11, COULD tier) is a derived
- * variant, not a second design: the same hues at inverted lightness, so the site keeps its
- * identity rather than becoming a different-looking site after dark. Three states are handled —
- * an explicit choice stamps data-theme on <html>, and the untouched default follows the
- * operating system.
+ * The palette is the reference video's opening frame, sampled off the frame rather than
+ * eyeballed: a deep navy page — #00061b at the edges, #000c28 across most of it — lifting to
+ * about #124266 under a soft blue glow behind the top of the content. Only the colour and that
+ * glow were taken; the frame's ring is not part of this.
+ *
+ * That navy is the site's theme now, and the default every visitor gets — it is no longer
+ * conditional on the reader's operating system, because a portfolio that renders white on a
+ * light-mode machine is not the design that was asked for.
+ *
+ * The Phase 10 mockup's light theme is kept, demoted to an opt-in choice on the sidebar toggle:
+ * the same hues at inverted lightness, so switching changes the light level and nothing about
+ * the site's identity.
  */
 :root {
+  --bg: oklch(0.13 0.051 259);
+  /* The secondary surface: the sampled #000c28, one step up from the page's darkest corners. */
+  --bg2: oklch(0.163 0.062 259);
+  --footer: oklch(0.178 0.055 258);
+  /* Cards are *raised* off the page, as they must be — below --bg there is no room to recess. */
+  --surface: oklch(0.205 0.052 258);
+  --text: oklch(0.96 0.012 250);
+  --muted: oklch(0.745 0.032 250);
+  --border: oklch(0.32 0.045 253);
+  --accent: oklch(0.72 0.16 293);
+  --accent-soft: oklch(0.72 0.16 293 / 0.16);
+  --cyan: oklch(0.72 0.11 195);
+  --cyan-soft: oklch(0.72 0.11 195 / 0.16);
+  --success: oklch(0.72 0.14 150);
+  --warning: oklch(0.78 0.14 70);
+  /* The glow from the frame, as a paintable colour so the light theme can switch it off. */
+  --glow: oklch(0.40 0.085 245 / 0.95);
+}
+
+/* The original light design, now entered deliberately rather than by default. */
+:root[data-theme="light"] {
   --bg: oklch(0.99 0.004 290);
-  /* The mockup's secondary surface, kept at its designed value. */
   --bg2: oklch(0.965 0.007 290);
-  /*
-   * The footer's own band. Same hue family as everything else — this is the page colour stepped
-   * down, not a new colour — but a little deeper than --bg2, which at 0.965 is nearly invisible
-   * against a 0.99 page once the dot-grid is over it.
-   */
   --footer: oklch(0.94 0.01 290);
   --surface: oklch(1 0 0);
   --text: oklch(0.22 0.02 290);
@@ -30,44 +51,8 @@
   --cyan-soft: oklch(0.5 0.13 195 / 0.1);
   --success: oklch(0.48 0.15 150);
   --warning: oklch(0.55 0.16 70);
-}
-
-/* Following the OS, unless the reader has explicitly chosen light. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: oklch(0.17 0.012 290);
-    --bg2: oklch(0.21 0.014 290);
-    /* Lighter than the page, not darker: below ~0.17 there is almost no room left to darken, so
-       a recessed band simply disappears. A raised band is the reading that works after dark. */
-    --footer: oklch(0.235 0.015 290);
-    --surface: oklch(0.21 0.014 290);
-    --text: oklch(0.94 0.006 290);
-    --muted: oklch(0.72 0.02 290);
-    --border: oklch(0.31 0.016 290);
-    --accent: oklch(0.72 0.16 293);
-    --accent-soft: oklch(0.72 0.16 293 / 0.16);
-    --cyan: oklch(0.72 0.11 195);
-    --cyan-soft: oklch(0.72 0.11 195 / 0.16);
-    --success: oklch(0.72 0.14 150);
-    --warning: oklch(0.78 0.14 70);
-  }
-}
-
-/* An explicit choice wins over the OS, in both directions. */
-:root[data-theme="dark"] {
-  --bg: oklch(0.17 0.012 290);
-  --bg2: oklch(0.21 0.014 290);
-  --footer: oklch(0.235 0.015 290);
-  --surface: oklch(0.21 0.014 290);
-  --text: oklch(0.94 0.006 290);
-  --muted: oklch(0.72 0.02 290);
-  --border: oklch(0.31 0.016 290);
-  --accent: oklch(0.72 0.16 293);
-  --accent-soft: oklch(0.72 0.16 293 / 0.16);
-  --cyan: oklch(0.72 0.11 195);
-  --cyan-soft: oklch(0.72 0.11 195 / 0.16);
-  --success: oklch(0.72 0.14 150);
-  --warning: oklch(0.78 0.14 70);
+  /* No glow on white: the same gradient over a light page reads as a stain, not depth. */
+  --glow: transparent;
 }
 
 @theme inline {
@@ -90,14 +75,16 @@
 
 body {
   background-color: var(--bg);
+  /*
+   * The video's glow — one soft radial, and the whole reason the page does not read as a flat
+   * dark rectangle. Pinned to the viewport so it stays behind the top of the content instead of
+   * scrolling away, and centred a little right of the middle because the sidebar takes the left.
+   */
+  background-image: radial-gradient(1500px 1200px at 50% -4%, var(--glow), transparent 72%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
-}
-
-/* The mockup's dot-grid page decoration. */
-.dot-grid {
-  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
-  background-size: 22px 22px;
 }
 
 /* Accessibility: a visible focus ring everywhere, never suppressed

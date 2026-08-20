@@ -18,30 +18,38 @@ export default async function ExperiencePage() {
   return (
     <>
       <TrackPageView path="/experience" />
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-6xl">
       <PageHeader title="Experience" lead="Where I have worked and what I did there." />
       {roles.length === 0 ? (
         <EmptyState message="Nothing published yet." />
       ) : (
-        <ol className="flex flex-col gap-5">
+        <ol className="gap-5 lg:columns-2">
           {roles.map((role) => {
             const logo = mediaUrl(role.companyLogo?.url);
             return (
-              <li key={role.id}>
+              <li key={role.id} className="mb-5 break-inside-avoid">
                 <Card>
-                  <div className="flex items-start gap-4">
-                    {logo ? (
-                      <Image
-                        src={logo}
-                        alt={role.companyLogo?.altText || `${role.company} logo`}
-                        width={48}
-                        height={48}
-                        unoptimized
-                        className="h-12 w-12 rounded-lg border border-border object-contain"
-                      />
-                    ) : null}
+                  <div className="flex items-start gap-5">
+                    {/* Always a tile, logo or not: a card that drops the block when nothing was
+                        uploaded sets its heading at a different indent from its neighbours. */}
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-accent-soft">
+                      {logo ? (
+                        <Image
+                          src={logo}
+                          alt={role.companyLogo?.altText || `${role.company} logo`}
+                          fill
+                          unoptimized
+                          sizes="64px"
+                          className="object-contain p-2"
+                        />
+                      ) : (
+                        <span className="font-display grid h-full w-full place-items-center text-xl font-semibold text-accent">
+                          {role.company?.trim().charAt(0).toUpperCase() ?? "·"}
+                        </span>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <h2 className="font-display text-lg font-semibold">{role.position}</h2>
+                      <h2 className="font-display text-lg font-semibold sm:text-xl">{role.position}</h2>
                       <p className="text-sm text-accent">{role.company}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-3">
                         <DateRange

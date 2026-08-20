@@ -74,10 +74,7 @@ export default function AdminProjectsPage() {
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean),
-        galleryMediaIds: values.galleryMediaIds
-          .split(",")
-          .map((item) => Number(item.trim()))
-          .filter((item) => Number.isFinite(item) && item > 0),
+        galleryMediaIds: values.galleryMediaIds,
         challenges: values.challenges.filter((block) => block.title.trim()),
       };
 

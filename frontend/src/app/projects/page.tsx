@@ -26,7 +26,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
   return (
     <>
       <TrackPageView path="/projects" />
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
       <PageHeader title="Projects" lead="Things I have designed, built and shipped." />
       <Suspense fallback={null}>
         <SearchBox action="/projects" placeholder="Search projects and technologies" />
@@ -34,7 +34,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
       {projects.length === 0 ? (
         <EmptyState message={search ? `No projects match “${search}”.` : "Nothing published yet."} />
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {projects.map((project) => {
             const thumbnail = mediaUrl(project.thumbnail?.url);
             return (
@@ -46,7 +46,7 @@ export default async function ProjectsPage({ searchParams }: Props) {
                     width={640}
                     height={320}
                     unoptimized
-                    className="mb-4 h-40 w-full rounded-xl border border-border object-cover"
+                    className="mb-4 h-44 w-full rounded-xl border border-border object-cover"
                   />
                 ) : null}
                 <h2 className="font-display text-lg font-semibold">

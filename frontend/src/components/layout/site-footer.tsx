@@ -11,9 +11,9 @@ export async function SiteFooter() {
 
   return (
     /*
-      Sits on --bg2 rather than the page background, so the footer reads as its own band instead
-      of trailing off the end of the content. The top border stays: on the dot-grid background the
-      tint alone is subtle, and the rule is what makes the edge definite.
+      Sits on --footer rather than the page background, so the footer reads as its own band
+      instead of trailing off the end of the content. The top border stays: against a page this
+      dark the tint alone is subtle, and the rule is what makes the edge definite.
     */
     <footer className="mt-16 border-t border-border bg-footer px-6 py-10 text-sm text-muted sm:px-10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

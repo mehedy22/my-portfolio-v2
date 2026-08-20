@@ -16,6 +16,7 @@ import {
   inputClass,
 } from "@/components/admin/ui/primitives";
 import { Modal } from "@/components/admin/ui/modal";
+import { MediaPicker } from "@/components/admin/ui/media-picker";
 import { useToast } from "@/lib/admin/use-toast";
 import type { components } from "@/generated/api/schema";
 
@@ -34,7 +35,7 @@ type FormValues = {
   publishedAt: string;
   seoTitle: string;
   seoDescription: string;
-  thumbnailMediaId: string;
+  thumbnailMediaId: number | null;
 };
 
 const empty = (): FormValues => ({
@@ -48,7 +49,7 @@ const empty = (): FormValues => ({
   publishedAt: "",
   seoTitle: "",
   seoDescription: "",
-  thumbnailMediaId: "",
+  thumbnailMediaId: null,
 });
 
 /** `datetime-local` needs "YYYY-MM-DDTHH:mm" in local time; the API speaks UTC instants. */
@@ -98,7 +99,7 @@ export default function AdminArticlesPage() {
         publishedAt: toLocalInput(a.publishedAt),
         seoTitle: a.seoTitle ?? "",
         seoDescription: a.seoDescription ?? "",
-        thumbnailMediaId: a.thumbnail?.id ? String(a.thumbnail.id) : "",
+        thumbnailMediaId: a.thumbnail?.id ?? null,
       },
     });
   }
@@ -116,7 +117,7 @@ export default function AdminArticlesPage() {
         publishedAt: values.publishedAt ? new Date(values.publishedAt).toISOString() : undefined,
         seoTitle: values.seoTitle || undefined,
         seoDescription: values.seoDescription || undefined,
-        thumbnailMediaId: values.thumbnailMediaId ? Number(values.thumbnailMediaId) : undefined,
+        thumbnailMediaId: values.thumbnailMediaId ?? undefined,
       };
       const result = id
         ? await api.PUT("/api/v1/admin/articles/{id}", { params: { path: { id } }, body })
@@ -263,12 +264,12 @@ export default function AdminArticlesPage() {
                   className={inputClass}
                 />
               </Field>
-              <Field label="Thumbnail media id" optional>
-                <input
-                  type="number"
+              {/* Uploads here, on the article's own form — not in the Media library first. */}
+              <Field label="Thumbnail" optional>
+                <MediaPicker
                   value={editing.values.thumbnailMediaId}
-                  onChange={(e) => set("thumbnailMediaId", e.target.value)}
-                  className={inputClass}
+                  onChange={(id) => set("thumbnailMediaId", id)}
+                  label="thumbnail"
                 />
               </Field>
               <Field label="SEO title" optional>

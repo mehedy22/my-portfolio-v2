@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Field, inputClass } from "@/components/admin/ui/primitives";
+import { MediaGalleryPicker, MediaPicker } from "@/components/admin/ui/media-picker";
 import type { components } from "@/generated/api/schema";
 
 type Project = components["schemas"]["ProjectResponse"];
@@ -31,7 +32,7 @@ export type ProjectFormValues = {
   displayOrder: number;
   thumbnailMediaId: number | null;
   technologies: string;
-  galleryMediaIds: string;
+  galleryMediaIds: number[];
   challenges: ChallengeBlock[];
 };
 
@@ -51,7 +52,7 @@ export function emptyProject(): ProjectFormValues {
     displayOrder: 0,
     thumbnailMediaId: null,
     technologies: "",
-    galleryMediaIds: "",
+    galleryMediaIds: [],
     challenges: [],
   };
 }
@@ -72,7 +73,7 @@ export function toFormValues(project: Project): ProjectFormValues {
     displayOrder: project.displayOrder ?? 0,
     thumbnailMediaId: project.thumbnail?.id ?? null,
     technologies: (project.technologies ?? []).join(", "),
-    galleryMediaIds: (project.gallery ?? []).map((item) => item.id).join(", "),
+    galleryMediaIds: (project.gallery ?? []).map((item) => item.id).filter((id): id is number => id != null),
     challenges: (project.challenges ?? []).map((block) => ({
       title: block.title ?? "",
       challenge: block.challenge ?? "",
@@ -235,23 +236,23 @@ export function ProjectForm({
         />
       </Field>
 
+      {/*
+        Both media fields upload here, on the project's own form. Asking for an id meant the only
+        way to add a project with pictures was to visit the Media library first, upload there, and
+        carry the numbers back — two screens and a transcription step for what is one task.
+      */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Thumbnail media id" optional hint="Upload in the Media library first.">
-          <input
-            type="number"
-            value={values.thumbnailMediaId ?? ""}
-            onChange={(event) =>
-              set("thumbnailMediaId", event.target.value === "" ? null : Number(event.target.value))
-            }
-            className={inputClass}
+        <Field label="Thumbnail" optional hint="Choose one already uploaded, or upload it here.">
+          <MediaPicker
+            value={values.thumbnailMediaId}
+            onChange={(id) => set("thumbnailMediaId", id)}
+            label="thumbnail"
           />
         </Field>
-        <Field label="Gallery media ids" optional hint="Comma-separated, in display order.">
-          <input
+        <Field label="Gallery" optional hint="Shown in this order on the project page.">
+          <MediaGalleryPicker
             value={values.galleryMediaIds}
-            onChange={(event) => set("galleryMediaIds", event.target.value)}
-            placeholder="4, 5, 6"
-            className={inputClass}
+            onChange={(ids) => set("galleryMediaIds", ids)}
           />
         </Field>
       </div>

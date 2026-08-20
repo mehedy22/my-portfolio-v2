@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { getCertifications, getProblemSolving, getSkills } from "@/lib/content";
 import { TrackPageView } from "@/components/track-page-view";
-import { ButtonLink, Card, Chip, EmptyState, PageHeader } from "@/components/ui/primitives";
+import { ButtonLink, Card, EmptyState, PageHeader } from "@/components/ui/primitives";
 import { SocialIcon } from "@/components/social-icon";
+import { TechIcon } from "@/components/tech-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -10,14 +11,6 @@ export const metadata: Metadata = {
   title: "Skills",
   description: "Technical skills, certifications and competitive-programming profiles.",
   alternates: { canonical: "/skills" },
-};
-
-/** Proficiency is a word in the data and a bar on the page; this is the mapping between them. */
-const PROFICIENCY_WIDTH: Record<string, string> = {
-  EXPERT: "92%",
-  ADVANCED: "82%",
-  INTERMEDIATE: "64%",
-  BEGINNER: "45%",
 };
 
 /**
@@ -37,7 +30,7 @@ export default async function SkillsPage() {
   const isEmpty = groups.length === 0 && certifications.length === 0 && profiles.length === 0;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <TrackPageView path="/skills" />
       <PageHeader
         title="Skills"
@@ -47,37 +40,53 @@ export default async function SkillsPage() {
       {isEmpty ? <EmptyState message="Nothing published yet." /> : null}
 
       {groups.length > 0 ? (
+        /*
+          One box per category, and inside it one small tile per skill — the category is the unit
+          a reader scans by ("what does this person do on the back end?"), so it gets the frame,
+          and the skills inside it get a grid rather than a list of progress bars. The bars are
+          gone with the list: a row of them invited a comparison between skills that the four
+          proficiency levels in the data cannot actually support.
+        */
         <section aria-labelledby="skills-heading">
           <h2 id="skills-heading" className="sr-only">
             Technical skills
           </h2>
-          <div className="grid gap-8 sm:grid-cols-2">
+          <div className="gap-6 lg:columns-2">
             {groups.map((group) => (
-              <div key={group.category}>
-                <Chip>{group.category}</Chip>
-                <div className="mt-4 flex flex-col gap-3">
-                  {group.skills?.map((skill) => (
-                    <div key={skill.id}>
-                      <div className="mb-1.5 flex justify-between text-sm">
-                        <span>{skill.name}</span>
-                        <span className="text-muted">
-                          {skill.proficiency ? skill.proficiency.toLowerCase() : ""}
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-accent-soft">
-                        <div
-                          className="h-1.5 rounded-full bg-accent"
-                          style={{
-                            width: skill.proficiency
-                              ? PROFICIENCY_WIDTH[skill.proficiency] ?? "60%"
-                              : "60%",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+              <Card key={group.category} className="mb-6 break-inside-avoid p-6 sm:p-7">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-display text-lg font-semibold sm:text-xl">
+                    {group.category}
+                  </h3>
+                  <span className="text-xs text-muted">
+                    {group.skills?.length ?? 0}{" "}
+                    {(group.skills?.length ?? 0) === 1 ? "skill" : "skills"}
+                  </span>
                 </div>
-              </div>
+
+                <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                  {group.skills?.map((skill) => (
+                    <li
+                      key={skill.id}
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-bg2 px-3 py-2.5 transition hover:border-accent"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent">
+                        <TechIcon name={skill.name} icon={skill.icon} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium" title={skill.name}>
+                          {skill.name}
+                        </span>
+                        {skill.proficiency ? (
+                          <span className="block text-[11px] leading-tight text-muted">
+                            {skill.proficiency.toLowerCase()}
+                          </span>
+                        ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             ))}
           </div>
         </section>
@@ -92,7 +101,7 @@ export default async function SkillsPage() {
             Judge profiles — the handle is the account, so the claims are checkable.
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {profiles.map((profile) => {
               const body = (
                 <>
@@ -161,7 +170,7 @@ export default async function SkillsPage() {
             Certifications
           </h2>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {certifications.map((certification) => (
               <Card key={certification.id} className="p-5">
                 <h3 className="font-display text-base font-semibold">{certification.name}</h3>

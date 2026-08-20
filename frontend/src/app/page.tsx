@@ -47,18 +47,23 @@ export default async function HomePage() {
       />
 
       {/*
-        Centred identity, no portrait — the sidebar already carries the photo, and repeating it
-        here competed with the name for the same glance.
+        Left-aligned identity, no portrait — the sidebar already carries the photo, and repeating
+        it here competed with the name for the same glance.
+
+        The intro was centred until now, which forced every line to a narrow measure and left the
+        text sitting in a column in the middle of a wide page. Ranged left it starts at the same
+        edge as everything below it and runs the width of the content, which is how a paragraph of
+        prose is meant to be read.
       */}
-      <section className="mx-auto flex max-w-3xl flex-col items-center text-center">
+      <section className="mx-auto flex max-w-6xl flex-col items-start text-left">
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-6xl">{title}</h1>
         {tagline ? <p className="mt-4 text-lg text-accent sm:text-xl">{tagline}</p> : null}
         {description ? (
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
+          <p className="mt-6 max-w-4xl whitespace-pre-line text-base leading-8 text-muted sm:text-lg">
             {description}
           </p>
         ) : null}
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
+        <div className="mt-9 flex flex-wrap gap-3">
           <ButtonLink href="/projects">View projects</ButtonLink>
           <ButtonLink href="/contact" variant="ghost">
             Contact me
@@ -66,7 +71,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-20 max-w-5xl" aria-labelledby="featured-heading">
+      <section className="mx-auto mt-20 max-w-6xl" aria-labelledby="featured-heading">
         <div className="mb-7">
           <h2 id="featured-heading" className="font-display text-2xl font-semibold">
             Featured
@@ -82,7 +87,7 @@ export default async function HomePage() {
             decided by the picture itself — a portrait image gets the tall tile, because cropping
             one into a wide tile is what makes a gallery look wrong.
           */
-          <div className="grid auto-rows-[150px] grid-cols-2 gap-3.5 sm:grid-cols-3">
+          <div className="grid auto-rows-[170px] grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
             {featured.map((media) => {
               const shape = shapeOf(media);
               const url = mediaUrl(media.url);
@@ -99,7 +104,7 @@ export default async function HomePage() {
                       alt={media.altText || ""}
                       fill
                       unoptimized
-                      sizes="(max-width: 640px) 50vw, 33vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
                       className="object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
                   ) : null}
@@ -115,7 +120,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="mx-auto mt-20 max-w-5xl rounded-3xl border border-border bg-gradient-to-br from-accent-soft to-cyan-soft p-10 sm:p-13">
+      <section className="mx-auto mt-20 max-w-6xl rounded-3xl border border-border bg-gradient-to-br from-accent-soft to-cyan-soft p-10 sm:p-13">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="font-display text-2xl font-semibold">Have a project in mind?</h2>

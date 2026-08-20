@@ -10,6 +10,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
  * The fixed left sidebar the Phase 10/11 design settled on: identity, nav, resume button and
  * social links. Every value comes from Settings (D-024) — nothing here is hardcoded, which is the
  * whole point of `GET /api/v1/settings` existing.
+ *
+ * <p>Its surface is translucent so the page's glow reads across the full width of the window, the
+ * way it does in the reference frame. An opaque column would cut the gradient off at 288px and
+ * leave a visible seam down the side of the page.
  */
 export async function Sidebar() {
   const [settings, profile] = await Promise.all([getSettings(), getProfile()]);
@@ -36,7 +40,7 @@ export async function Sidebar() {
   ];
 
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-border bg-surface p-6 md:sticky md:top-0 md:h-screen md:w-72 md:border-b-0 md:border-r">
+    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-border bg-surface/70 p-6 backdrop-blur-xl md:sticky md:top-0 md:h-screen md:w-72 md:border-b-0 md:border-r">
       <Link href="/" className="flex items-center gap-3">
         {photo ? (
           <Image

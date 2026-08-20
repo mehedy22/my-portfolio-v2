@@ -23,7 +23,7 @@ export default async function ResearchPage() {
   const entries = await getResearch();
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <TrackPageView path="/research" />
 
       <header className="mb-10">
@@ -37,7 +37,7 @@ export default async function ResearchPage() {
       {entries.length === 0 ? (
         <EmptyState message="Nothing published yet." />
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="grid gap-5 lg:grid-cols-2">
           {entries.map((entry) => {
             const pdf = mediaUrl(entry.pdf?.url);
             const link = entry.externalUrl || pdf;

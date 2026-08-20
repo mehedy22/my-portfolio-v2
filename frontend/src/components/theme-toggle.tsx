@@ -2,35 +2,39 @@
 
 import { useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "dark" | "light";
 const STORAGE_KEY = "portfolio-theme";
 
 /**
- * Light / dark / follow-the-system (Sprint 11, COULD tier).
+ * Switches between the site's own navy theme and the lighter one.
  *
- * <p>"System" is a real third state, not the absence of a choice: a reader who has never touched
- * this gets their OS preference, and a reader who picks light on a dark-mode machine keeps light.
- * The choice is stored in localStorage — it is a display preference, not personal data, and it
- * never leaves the browser.
+ * <p>Two states, not three. It used to offer light / dark / follow-the-system, which made sense
+ * while light was the design and dark a derived variant. The navy is the design now, so
+ * "system" would mean handing half the readers a different-looking site based on a setting that
+ * has nothing to do with this one — the choice on offer is simply whether to read it lighter.
+ *
+ * <p>The choice is stored in localStorage; it is a display preference, not personal data, and it
+ * never leaves the browser. Choosing dark clears the entry rather than writing it, so a reader
+ * who has never touched this and one who chose the default land on the same markup.
  */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setTheme((localStorage.getItem(STORAGE_KEY) as Theme) ?? "system");
+    setTheme(localStorage.getItem(STORAGE_KEY) === "light" ? "light" : "dark");
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
     const root = document.documentElement;
-    if (theme === "system") {
+    if (theme === "light") {
+      root.setAttribute("data-theme", "light");
+      localStorage.setItem(STORAGE_KEY, "light");
+    } else {
       root.removeAttribute("data-theme");
       localStorage.removeItem(STORAGE_KEY);
-    } else {
-      root.setAttribute("data-theme", theme);
-      localStorage.setItem(STORAGE_KEY, theme);
     }
   }, [theme, mounted]);
 
@@ -39,16 +43,15 @@ export function ThemeToggle() {
   if (!mounted) return <div className="h-8" aria-hidden />;
 
   const options: { value: Theme; label: string; icon: string }[] = [
-    { value: "light", label: "Light", icon: "☀" },
-    { value: "system", label: "System", icon: "◐" },
     { value: "dark", label: "Dark", icon: "☾" },
+    { value: "light", label: "Light", icon: "☀" },
   ];
 
   return (
     <div
       role="radiogroup"
       aria-label="Colour theme"
-      className="flex gap-1 rounded-full border border-border p-1"
+      className="flex w-fit gap-1 rounded-full border border-border p-1"
     >
       {options.map((option) => (
         <button

@@ -4,18 +4,19 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiError, mediaUrl } from "@/lib/admin/api";
-import { Button, Card, ErrorState, ListSkeleton, PageHeader, Toast } from "@/components/admin/ui/primitives";
+import { Button, Card, ErrorState, Field, ListSkeleton, PageHeader, Toast } from "@/components/admin/ui/primitives";
+import { MediaPicker } from "@/components/admin/ui/media-picker";
 import { useToast } from "@/lib/admin/use-toast";
 
 /**
- * Profile photo and resume (D-015). Both reference media uploaded in the Media library; clearing
- * a field only drops the reference, it never deletes the file.
+ * Profile photo and resume (D-015). Both are chosen — or uploaded — right here; clearing a field
+ * only drops the reference, it never deletes the file.
  */
 export default function ProfileSettingsPage() {
   const client = useQueryClient();
   const { message: toast, show } = useToast();
-  const [photoId, setPhotoId] = useState<string>("");
-  const [resumeId, setResumeId] = useState<string>("");
+  const [photoId, setPhotoId] = useState<number | null>(null);
+  const [resumeId, setResumeId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const query = useQuery({
@@ -29,8 +30,8 @@ export default function ProfileSettingsPage() {
 
   useEffect(() => {
     if (!query.data) return;
-    setPhotoId(query.data.profileImage?.id ? String(query.data.profileImage.id) : "");
-    setResumeId(query.data.resume?.id ? String(query.data.resume.id) : "");
+    setPhotoId(query.data.profileImage?.id ?? null);
+    setResumeId(query.data.resume?.id ?? null);
   }, [query.data]);
 
   const save = useMutation({
@@ -40,8 +41,8 @@ export default function ProfileSettingsPage() {
         // the record, which is exactly what "no photo" means. The generated types model the
         // field as optional rather than nullable, so this is also the only shape that type-checks.
         body: {
-          profileImageMediaId: photoId ? Number(photoId) : undefined,
-          resumeMediaId: resumeId ? Number(resumeId) : undefined,
+          profileImageMediaId: photoId ?? undefined,
+          resumeMediaId: resumeId ?? undefined,
         },
       });
       if (!result.response.ok) throw new Error(apiError(result.error, "Could not save."));
@@ -72,8 +73,10 @@ export default function ProfileSettingsPage() {
           }}
           className="flex flex-col gap-5"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             {photoUrl ? (
+              // The saved photo, at the size and crop the site actually uses it at — the picker's
+              // own thumbnail is a file preview, which is not the same question.
               <Image
                 src={photoUrl}
                 alt={query.data?.profileImage?.altText || "Profile photo"}
@@ -83,34 +86,26 @@ export default function ProfileSettingsPage() {
                 className="h-18 w-18 rounded-xl border border-border object-cover"
               />
             ) : null}
-            <label className="flex flex-1 flex-col gap-1.5">
-              <span className="text-sm font-medium">Profile photo media id</span>
-              <input
-                type="number"
-                value={photoId}
-                onChange={(event) => setPhotoId(event.target.value)}
-                placeholder="Leave empty to clear"
-                className="rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-accent"
-              />
-              <span className="text-xs text-muted">Upload it in the Media library first.</span>
-            </label>
+            <div className="flex-1">
+              <Field label="Profile photo" optional hint="Choose one already uploaded, or upload it here.">
+                <MediaPicker value={photoId} onChange={setPhotoId} label="photo" />
+              </Field>
+            </div>
           </div>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium">Resume media id</span>
-            <input
-              type="number"
+          <Field label="Resume" optional hint="A PDF. Uploads here — no need to visit the library.">
+            <MediaPicker
               value={resumeId}
-              onChange={(event) => setResumeId(event.target.value)}
-              placeholder="Leave empty to clear"
-              className="rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-accent"
+              onChange={setResumeId}
+              accept="application/pdf"
+              label="resume"
             />
-            {resumeUrl ? (
-              <a href={resumeUrl} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">
-                Open current resume
-              </a>
-            ) : null}
-          </label>
+          </Field>
+          {resumeUrl ? (
+            <a href={resumeUrl} target="_blank" rel="noreferrer" className="text-xs text-accent hover:underline">
+              Open current resume
+            </a>
+          ) : null}
 
           {error ? (
             <p role="alert" className="text-sm text-warning">

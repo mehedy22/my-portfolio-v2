@@ -45,7 +45,7 @@ export default async function AboutPage() {
   const isEmpty = !description && roles.length === 0 && education.length === 0;
 
   return (
-    <>
+    <div className="mx-auto max-w-6xl">
       <TrackPageView path="/about" />
 
       {/* Intro — image left, text right, as the mockup lays it out. */}
@@ -95,35 +95,68 @@ export default async function AboutPage() {
       ) : null}
 
       {roles.length > 0 ? (
+        /*
+          Cards, each led by the company's logo — the logo the schema has carried since V5 and
+          this page never drew, which is why a portfolio full of uploaded logos still showed
+          none. Two abreast on a wide screen and one per row below it, so a role gets a block
+          with room for its description instead of the thin strip beside a date column that this
+          section used to be.
+        */
         <section className="mt-16">
           <Chip>Experience</Chip>
-          <ol className="mt-6">
-            {roles.map((role, index) => (
-              <li
-                key={role.id}
-                className={`flex flex-col gap-2 py-5 sm:flex-row sm:gap-6 ${
-                  index < roles.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                <div className="w-32 shrink-0 text-sm text-muted">
-                  {formatRange(role.startDate, role.endDate, role.currentlyWorking, "Present")}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-display text-base font-semibold">{role.position}</h3>
-                  <p className="text-sm text-accent">{role.company}</p>
-                  {role.description ? (
-                    <p className="mt-2 whitespace-pre-line text-sm text-muted">{role.description}</p>
-                  ) : null}
-                  {role.technologies?.length ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {role.technologies.map((tech) => (
-                        <Chip key={tech}>{tech}</Chip>
-                      ))}
+          <ol className="mt-6 gap-5 lg:columns-2">
+            {roles.map((role) => {
+              const logo = mediaUrl(role.companyLogo?.url);
+              return (
+                <li key={role.id} className="mb-5 break-inside-avoid">
+                  <Card className="flex gap-5 p-6 sm:gap-6 sm:p-7">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-accent-soft sm:h-20 sm:w-20">
+                      {logo ? (
+                        <Image
+                          src={logo}
+                          alt={role.companyLogo?.altText || `${role.company} logo`}
+                          fill
+                          unoptimized
+                          sizes="80px"
+                          className="object-contain p-2"
+                        />
+                      ) : (
+                        // No logo uploaded yet — an initial keeps this card aligned with the ones
+                        // that have one, exactly as the education rows do.
+                        <span className="font-display grid h-full w-full place-items-center text-2xl font-semibold text-accent">
+                          {role.company?.trim().charAt(0).toUpperCase() ?? "·"}
+                        </span>
+                      )}
                     </div>
-                  ) : null}
-                </div>
-              </li>
-            ))}
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-display text-lg font-semibold sm:text-xl">
+                        {role.position}
+                      </h3>
+                      <p className="mt-1 text-sm text-accent">{role.company}</p>
+                      <p className="mt-1 text-sm text-muted">
+                        {formatRange(role.startDate, role.endDate, role.currentlyWorking, "Present")}
+                        {role.employmentType
+                          ? ` · ${role.employmentType.replace("_", " ").toLowerCase()}`
+                          : ""}
+                      </p>
+                      {role.description ? (
+                        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted">
+                          {role.description}
+                        </p>
+                      ) : null}
+                      {role.technologies?.length ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {role.technologies.map((tech) => (
+                            <Chip key={tech}>{tech}</Chip>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </Card>
+                </li>
+              );
+            })}
           </ol>
         </section>
       ) : null}
@@ -198,8 +231,7 @@ export default async function AboutPage() {
           </span>
         </a>
       </section>
-
-    </>
+    </div>
   );
 }
 
